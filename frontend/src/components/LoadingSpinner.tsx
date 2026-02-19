@@ -1,5 +1,5 @@
 /**
- * Loading Spinner Component
+ * Loading Spinner — warm amber
  */
 
 interface LoadingSpinnerProps {
@@ -7,33 +7,15 @@ interface LoadingSpinnerProps {
 }
 
 function LoadingSpinner({ size = 'md' }: LoadingSpinnerProps) {
-  const sizeClasses = {
-    sm: 'w-5 h-5',
-    md: 'w-8 h-8',
-    lg: 'w-12 h-12',
-  };
+  const sizes = { sm: 20, md: 32, lg: 48 };
+  const s = sizes[size];
 
   return (
-    <div className={`${sizeClasses[size]} animate-spin`}>
-      <svg
-        className="w-full h-full text-accent-primary"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          className="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth="4"
-        />
-        <path
-          className="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        />
+    <div style={{ width: s, height: s, animation: 'spin 0.9s linear infinite' }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="#ddc9aa" strokeWidth="2" />
+        <path d="M12 2a10 10 0 0110 10" stroke="#c8870a" strokeWidth="2.5" strokeLinecap="round" />
       </svg>
     </div>
   );

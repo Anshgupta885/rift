@@ -1,6 +1,5 @@
 /**
- * Graph Visualization Component
- * Uses Cytoscape.js for interactive graph rendering
+ * Graph Visualization — warm palette, editorial feel
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -14,37 +13,21 @@ interface GraphVisualizationProps {
   selectedRing: FraudRing | null;
 }
 
-function GraphVisualization({
-  graphData,
-  onNodeSelect,
-  selectedRing,
-}: GraphVisualizationProps) {
+function GraphVisualization({ graphData, onNodeSelect, selectedRing }: GraphVisualizationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
   const [tooltip, setTooltip] = useState<{
-    visible: boolean;
-    x: number;
-    y: number;
-    data: {
-      id: string;
-      score: number;
-      patterns: string[];
-      ringId: string | null;
-    } | null;
+    visible: boolean; x: number; y: number;
+    data: { id: string; score: number; patterns: string[]; ringId: string | null } | null;
   }>({ visible: false, x: 0, y: 0, data: null });
 
   useEffect(() => {
     if (!containerRef.current || !graphData) return;
 
-    // Convert graph data to Cytoscape elements
     const elements: ElementDefinition[] = [];
 
-    // Add nodes
     for (const node of graphData.nodes) {
-      const size = node.suspicious
-        ? 20 + (node.suspicion_score / 100) * 30
-        : 20;
-
+      const size = node.suspicious ? 20 + (node.suspicion_score / 100) * 28 : 18;
       elements.push({
         data: {
           id: node.id,
@@ -58,7 +41,6 @@ function GraphVisualization({
       });
     }
 
-    // Add edges
     for (const edge of graphData.edges) {
       elements.push({
         data: {
@@ -71,68 +53,80 @@ function GraphVisualization({
       });
     }
 
-    // Cytoscape stylesheet
     const style = [
       {
         selector: 'node',
         style: {
           label: 'data(label)',
-          'background-color': '#3b82f6',
-          color: '#fff',
+          'background-color': '#c8bfb5',
+          'border-color': '#a09590',
+          'border-width': 1,
+          color: '#3d3430',
           'text-valign': 'bottom',
           'text-halign': 'center',
-          'font-size': '10px',
+          'font-size': '9px',
+          'font-family': 'DM Sans, sans-serif',
           width: 'data(size)',
           height: 'data(size)',
           'text-margin-y': 5,
         },
       },
       {
-        selector: 'node[suspicious]',
+        selector: 'node[?suspicious]',
         style: {
-          'background-color': (ele: cytoscape.NodeSingular) =>
-            ele.data('suspicious') ? '#ef4444' : '#3b82f6',
+          'background-color': '#d95e3a',
+          'border-color': '#c44a2a',
+          'border-width': 1.5,
+          color: '#3d3430',
         },
       },
       {
         selector: 'node:selected',
         style: {
           'border-width': 3,
-          'border-color': '#f59e0b',
+          'border-color': '#c8870a',
+          'background-color': '#e6a020',
         },
       },
       {
         selector: 'edge',
         style: {
           width: 1,
-          'line-color': '#4b5563',
-          'target-arrow-color': '#4b5563',
+          'line-color': '#ddc9aa',
+          'target-arrow-color': '#c8bfb5',
           'target-arrow-shape': 'triangle',
           'curve-style': 'bezier',
-          'arrow-scale': 0.8,
+          'arrow-scale': 0.6,
+          opacity: 0.7,
         },
       },
       {
-        selector: 'edge[is_fraud_ring_edge]',
+        selector: 'edge[?is_fraud_ring_edge]',
         style: {
-          'line-color': (ele: cytoscape.EdgeSingular) =>
-            ele.data('is_fraud_ring_edge') ? '#f59e0b' : '#4b5563',
-          'target-arrow-color': (ele: cytoscape.EdgeSingular) =>
-            ele.data('is_fraud_ring_edge') ? '#f59e0b' : '#4b5563',
-          width: (ele: cytoscape.EdgeSingular) => (ele.data('is_fraud_ring_edge') ? 2 : 1),
+          'line-color': '#c8870a',
+          'target-arrow-color': '#c8870a',
+          width: 2,
+          opacity: 0.9,
         },
       },
       {
         selector: '.highlighted',
         style: {
-          'background-color': '#f59e0b',
-          'line-color': '#f59e0b',
-          'target-arrow-color': '#f59e0b',
+          'background-color': '#e6a020',
+          'border-color': '#c8870a',
+          'border-width': 3,
+        },
+      },
+      {
+        selector: '.highlighted-edge',
+        style: {
+          'line-color': '#c8870a',
+          'target-arrow-color': '#c8870a',
+          width: 2.5,
         },
       },
     ];
 
-    // Initialize Cytoscape
     cyRef.current = cytoscape({
       container: containerRef.current,
       elements,
@@ -150,22 +144,19 @@ function GraphVisualization({
       minZoom: 0.1,
       maxZoom: 3,
       wheelSensitivity: 0.3,
+      backgroundColor: 'transparent',
     });
 
     const cy = cyRef.current;
 
-    // Event handlers
-    cy.on('tap', 'node', (evt) => {
-      const node = evt.target;
-      onNodeSelect(node.data('id'));
+    cy.on('tap', 'node', evt => {
+      onNodeSelect(evt.target.data('id'));
     });
 
-    cy.on('mouseover', 'node', (evt) => {
+    cy.on('mouseover', 'node', evt => {
       const node = evt.target;
       const pos = node.renderedPosition();
-      const container = containerRef.current;
-      
-      if (container) {
+      if (containerRef.current) {
         setTooltip({
           visible: true,
           x: pos.x,
@@ -184,21 +175,13 @@ function GraphVisualization({
       setTooltip({ visible: false, x: 0, y: 0, data: null });
     });
 
-    return () => {
-      cyRef.current?.destroy();
-    };
+    return () => { cyRef.current?.destroy(); };
   }, [graphData, onNodeSelect]);
 
-  // Highlight selected ring
   useEffect(() => {
     if (!cyRef.current) return;
-
     const cy = cyRef.current;
-
-    // Remove previous highlights
-    cy.elements().removeClass('highlighted');
-
-    // Highlight ring members if selected
+    cy.elements().removeClass('highlighted highlighted-edge');
     if (selectedRing) {
       for (const accountId of selectedRing.member_accounts) {
         cy.getElementById(accountId).addClass('highlighted');
@@ -206,97 +189,105 @@ function GraphVisualization({
     }
   }, [selectedRing]);
 
-  const handleZoomIn = () => {
-    cyRef.current?.zoom(cyRef.current.zoom() * 1.2);
-  };
+  const handleZoomIn = () => cyRef.current?.zoom(cyRef.current.zoom() * 1.2);
+  const handleZoomOut = () => cyRef.current?.zoom(cyRef.current.zoom() / 1.2);
+  const handleFit = () => cyRef.current?.fit();
 
-  const handleZoomOut = () => {
-    cyRef.current?.zoom(cyRef.current.zoom() / 1.2);
-  };
-
-  const handleFit = () => {
-    cyRef.current?.fit();
-  };
-
-  const getScoreClass = (score: number) => {
-    if (score >= 70) return 'score-high';
-    if (score >= 40) return 'score-medium';
-    return 'score-low';
-  };
+  const ScoreColor = (score: number) => score >= 70 ? '#c44a2a' : score >= 40 ? '#a06c08' : '#3a5a4a';
 
   return (
-    <div className="relative h-full">
-      {/* Zoom Controls */}
-      <div className="absolute top-4 right-4 z-10 flex flex-col space-y-2">
-        <button
-          onClick={handleZoomIn}
-          className="w-8 h-8 bg-dark-700 hover:bg-dark-600 rounded flex items-center justify-center"
-          title="Zoom In"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
-          </svg>
-        </button>
-        <button
-          onClick={handleZoomOut}
-          className="w-8 h-8 bg-dark-700 hover:bg-dark-600 rounded flex items-center justify-center"
-          title="Zoom Out"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
-          </svg>
-        </button>
-        <button
-          onClick={handleFit}
-          className="w-8 h-8 bg-dark-700 hover:bg-dark-600 rounded flex items-center justify-center"
-          title="Fit to Screen"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-          </svg>
-        </button>
+    <div style={{ position: 'relative', height: '100%' }}>
+      {/* Zoom controls */}
+      <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        {[
+          { label: '+', action: handleZoomIn, title: 'Zoom in' },
+          { label: '−', action: handleZoomOut, title: 'Zoom out' },
+          { label: '⊡', action: handleFit, title: 'Fit to screen' },
+        ].map(btn => (
+          <button
+            key={btn.label}
+            onClick={btn.action}
+            title={btn.title}
+            style={{
+              width: '32px',
+              height: '32px',
+              background: 'rgba(253, 250, 245, 0.92)',
+              border: '1px solid #ddc9aa',
+              borderRadius: '3px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontFamily: 'monospace',
+              fontSize: '1rem',
+              color: 'var(--ink-700)',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#ede0cc'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(253, 250, 245, 0.92)'; }}
+          >
+            {btn.label}
+          </button>
+        ))}
       </div>
 
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 z-10 bg-dark-700/90 rounded-lg p-3 text-xs">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-blue-500 mr-2" />
-            <span>Normal</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-red-500 mr-2" />
-            <span>Suspicious</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-0.5 bg-orange-500 mr-2" />
-            <span>Fraud Ring Edge</span>
-          </div>
+      <div style={{
+        position: 'absolute',
+        bottom: '1rem',
+        left: '1rem',
+        zIndex: 10,
+        background: 'rgba(253, 250, 245, 0.92)',
+        border: '1px solid #ddc9aa',
+        borderRadius: '3px',
+        padding: '0.625rem 0.875rem',
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '0.7rem',
+        color: 'var(--ink-500)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <LegendItem color="#c8bfb5" label="Normal" shape="circle" />
+          <LegendItem color="#d95e3a" label="Suspicious" shape="circle" />
+          <LegendItem color="#c8870a" label="Ring edge" shape="line" />
         </div>
       </div>
 
-      {/* Graph Container */}
-      <div ref={containerRef} className="w-full h-[550px]" />
+      {/* Graph */}
+      <div
+        ref={containerRef}
+        style={{
+          width: '100%',
+          height: '540px',
+          background: 'radial-gradient(ellipse at 50% 50%, rgba(237, 224, 204, 0.2) 0%, rgba(253, 250, 245, 0.05) 70%)',
+          borderRadius: '3px',
+        }}
+      />
 
       {/* Tooltip */}
       {tooltip.visible && tooltip.data && (
-        <div
-          className="cy-tooltip"
-          style={{
-            left: tooltip.x + 10,
-            top: tooltip.y + 10,
-          }}
-        >
+        <div className="cy-tooltip" style={{ left: tooltip.x + 12, top: tooltip.y + 12 }}>
           <h4>{tooltip.data.id}</h4>
-          <p className={getScoreClass(tooltip.data.score)}>
-            Score: {tooltip.data.score}
+          <p style={{ color: ScoreColor(tooltip.data.score), fontWeight: 600 }}>
+            Score: {tooltip.data.score}/100
           </p>
           {tooltip.data.patterns.length > 0 && (
-            <p>Patterns: {tooltip.data.patterns.join(', ')}</p>
+            <p>{tooltip.data.patterns.join(', ')}</p>
           )}
           {tooltip.data.ringId && <p>Ring: {tooltip.data.ringId}</p>}
         </div>
       )}
+    </div>
+  );
+}
+
+function LegendItem({ color, label, shape }: { color: string; label: string; shape: 'circle' | 'line' }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+      {shape === 'circle'
+        ? <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: color }} />
+        : <div style={{ width: '16px', height: '2px', background: color }} />
+      }
+      <span>{label}</span>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 /**
- * Dashboard Page Component
- * Displays graph visualization, fraud rings, and analysis summary
+ * Dashboard Page — warm editorial
  */
 
 import { useState } from 'react';
@@ -28,155 +27,137 @@ function DashboardPage({ analysisData, onReset }: DashboardPageProps) {
 
   if (!analysisData) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-gray-400 mb-4">No analysis data available</p>
-        <button onClick={onReset} className="btn-primary">
-          Upload CSV
-        </button>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '1rem' }}>
+        <p style={{ fontFamily: "'Lora', serif", color: '#a09590' }}>No analysis data available</p>
+        <button className="btn-primary" onClick={onReset}>Upload a file</button>
       </div>
     );
   }
 
   const { graph_data, fraud_analysis } = analysisData;
 
-  const handleDownload = async () => {
-    try {
-      await downloadJSON(fraud_analysis);
-    } catch (error) {
-      console.error('Download failed:', error);
-    }
-  };
-
   const handleNodeSelect = (accountId: string) => {
-    const account = fraud_analysis.suspicious_accounts.find(
-      (a) => a.account_id === accountId
-    );
+    const account = fraud_analysis.suspicious_accounts.find(a => a.account_id === accountId);
     setSelectedAccount(account || null);
-    
     if (account?.ring_id) {
-      const ring = fraud_analysis.fraud_rings.find(
-        (r) => r.ring_id === account.ring_id
-      );
-      setSelectedRing(ring || null);
+      setSelectedRing(fraud_analysis.fraud_rings.find(r => r.ring_id === account.ring_id) || null);
     } else {
       setSelectedRing(null);
     }
   };
 
+  const handleDownload = async () => {
+    try { await downloadJSON(fraud_analysis); } catch (e) { console.error(e); }
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Summary Cards */}
-      <SummaryCards summary={fraud_analysis.summary} />
+    <div className="animate-fade-in" style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem 1rem' }}>
 
-      {/* Risk Heatmap Legend */}
-      <RiskHeatmap accounts={fraud_analysis.suspicious_accounts} />
-
-      {/* Tab Navigation */}
-      <div className="flex items-center justify-between">
-        <div className="flex space-x-2">
-          <TabButton
-            active={activeTab === 'graph'}
-            onClick={() => setActiveTab('graph')}
-          >
-            Graph View
-          </TabButton>
-          <TabButton
-            active={activeTab === 'accounts'}
-            onClick={() => setActiveTab('accounts')}
-          >
-            Suspicious Accounts ({fraud_analysis.suspicious_accounts.length})
-          </TabButton>
-          <TabButton
-            active={activeTab === 'rings'}
-            onClick={() => setActiveTab('rings')}
-          >
-            Fraud Rings ({fraud_analysis.fraud_rings.length})
-          </TabButton>
+      {/* Page header */}
+      <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+        <div>
+          <p className="annotation" style={{ marginBottom: '0.375rem' }}>Analysis results</p>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, color: 'var(--ink-900)', lineHeight: 1.2 }}>
+            Transaction graph report
+          </h2>
         </div>
-
-        <button onClick={handleDownload} className="btn-primary flex items-center">
-          <svg
-            className="w-4 h-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
+        <button
+          className="btn-primary"
+          onClick={handleDownload}
+          style={{ flexShrink: 0 }}
+        >
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
-          Download JSON
+          Export JSON
         </button>
       </div>
 
-      {/* Main Content Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Graph / Table Area */}
-        <div className="lg:col-span-2">
-          <div className="card min-h-[600px]">
-            {activeTab === 'graph' && (
-              <GraphVisualization
-                graphData={graph_data}
-                onNodeSelect={handleNodeSelect}
-                selectedRing={selectedRing}
-              />
-            )}
-            {activeTab === 'accounts' && (
-              <SuspiciousAccountsTable
-                accounts={fraud_analysis.suspicious_accounts}
-                onAccountSelect={handleNodeSelect}
-              />
-            )}
-            {activeTab === 'rings' && (
-              <FraudRingTable
-                rings={fraud_analysis.fraud_rings}
-                onRingSelect={(ring) => {
-                  setSelectedRing(ring);
-                  setActiveTab('graph');
-                }}
-              />
-            )}
-          </div>
+      {/* Metrics */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <SummaryCards summary={fraud_analysis.summary} />
+      </div>
+
+      {/* Risk distribution */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <RiskHeatmap accounts={fraud_analysis.suspicious_accounts} />
+      </div>
+
+      <div className="divider" />
+
+      {/* Tab navigation */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div className="tab-bar">
+          <TabItem label="Graph view" active={activeTab === 'graph'} onClick={() => setActiveTab('graph')} />
+          <TabItem
+            label={`Suspicious accounts (${fraud_analysis.suspicious_accounts.length})`}
+            active={activeTab === 'accounts'}
+            onClick={() => setActiveTab('accounts')}
+          />
+          <TabItem
+            label={`Fraud rings (${fraud_analysis.fraud_rings.length})`}
+            active={activeTab === 'rings'}
+            onClick={() => setActiveTab('rings')}
+          />
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.5rem', alignItems: 'start' }}>
+        {/* Primary panel */}
+        <div className="card" style={{ minHeight: '600px' }}>
+          {activeTab === 'graph' && (
+            <GraphVisualization
+              graphData={graph_data}
+              onNodeSelect={handleNodeSelect}
+              selectedRing={selectedRing}
+            />
+          )}
+          {activeTab === 'accounts' && (
+            <SuspiciousAccountsTable
+              accounts={fraud_analysis.suspicious_accounts}
+              onAccountSelect={handleNodeSelect}
+            />
+          )}
+          {activeTab === 'rings' && (
+            <FraudRingTable
+              rings={fraud_analysis.fraud_rings}
+              onRingSelect={ring => {
+                setSelectedRing(ring);
+                setActiveTab('graph');
+              }}
+            />
+          )}
         </div>
 
-        {/* Side Panel */}
-        <div className="space-y-6">
-          {/* Fraud Explanation Panel */}
-          <FraudExplanationPanel
-            account={selectedAccount}
-            ring={selectedRing}
-          />
+        {/* Side panel */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <FraudExplanationPanel account={selectedAccount} ring={selectedRing} />
 
-          {/* Quick Stats */}
+          {/* Quick stats */}
           <div className="card">
-            <h3 className="font-semibold mb-4">Analysis Details</h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Total Nodes</span>
-                <span>{graph_data.nodes.length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Total Edges</span>
-                <span>{graph_data.edges.length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Processing Time</span>
-                <span>{fraud_analysis.summary.processing_time_seconds}s</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Detection Rate</span>
-                <span>
-                  {(
-                    (fraud_analysis.summary.suspicious_accounts_flagged /
-                      fraud_analysis.summary.total_accounts_analyzed) *
-                    100
-                  ).toFixed(1)}
-                  %
-                </span>
-              </div>
+            <p className="annotation" style={{ marginBottom: '0.75rem' }}>Graph statistics</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+              {[
+                ['Nodes', graph_data.nodes.length.toLocaleString()],
+                ['Edges', graph_data.edges.length.toLocaleString()],
+                ['Suspicious nodes', fraud_analysis.suspicious_accounts.length.toLocaleString()],
+                ['Processing time', `${fraud_analysis.summary.processing_time_seconds}s`],
+              ].map(([label, value], i, arr) => (
+                <div
+                  key={label}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    padding: '0.625rem 0',
+                    borderBottom: i < arr.length - 1 ? '1px solid #f0e8de' : 'none',
+                  }}
+                >
+                  <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.8rem', color: 'var(--ink-500)' }}>{label}</span>
+                  <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '0.9rem', fontWeight: 600, color: 'var(--ink-900)' }}>{value}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -185,25 +166,10 @@ function DashboardPage({ analysisData, onReset }: DashboardPageProps) {
   );
 }
 
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+function TabItem({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-        active
-          ? 'bg-accent-primary text-white'
-          : 'bg-dark-700 text-gray-400 hover:text-white hover:bg-dark-600'
-      }`}
-    >
-      {children}
+    <button className={`tab-item${active ? ' active' : ''}`} onClick={onClick}>
+      {label}
     </button>
   );
 }

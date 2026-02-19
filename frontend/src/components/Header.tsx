@@ -1,6 +1,5 @@
 /**
- * Header Component
- * Navigation and branding
+ * Header Component — editorial/warm aesthetic
  */
 
 interface HeaderProps {
@@ -12,71 +11,123 @@ interface HeaderProps {
 
 function Header({ currentPage, onNavigate, hasAnalysis, onReset }: HeaderProps) {
   return (
-    <header className="bg-dark-800 border-b border-dark-600">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo & Title */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center">
-              <svg 
-                className="w-6 h-6 text-white" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" 
-                />
+    <header style={{ background: 'rgba(253, 250, 245, 0.92)', backdropFilter: 'blur(12px)' }}
+      className="border-b border-stone-200 sticky top-0 z-50">
+      <div className="container mx-auto px-6">
+        {/* Top bar with publication-style layout */}
+        <div className="flex items-center justify-between py-3 border-b border-stone-200">
+          <p className="annotation" style={{ color: '#a09590' }}>
+            Financial Crime Detection Engine
+          </p>
+          <p className="annotation" style={{ color: '#a09590' }}>
+            Graph-Based Pattern Analysis
+          </p>
+        </div>
+
+        {/* Main header */}
+        <div className="flex items-center justify-between py-4">
+          {/* Logo */}
+          <button
+            onClick={() => onNavigate('home')}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
+            <div
+              className="w-9 h-9 flex items-center justify-center"
+              style={{
+                background: 'var(--ink-900)',
+                borderRadius: '3px',
+              }}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M12 3v1.5M6.343 6.343l-1.06-1.06M3 12H1.5M6.343 17.657l-1.06 1.06M12 21v-1.5M17.657 17.657l1.06 1.06M21 12h1.5M17.657 6.343l1.06-1.06M12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" />
               </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold">Financial Crime Detection</h1>
-              <p className="text-xs text-gray-400">Graph-Based Fraud Analysis Engine</p>
+              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink-900)', lineHeight: 1.1 }}>
+                Ledger<span style={{ color: 'var(--amber)' }}>Lens</span>
+              </h1>
             </div>
-          </div>
+          </button>
 
           {/* Navigation */}
-          <nav className="flex items-center space-x-4">
-            <button
+          <nav className="flex items-center gap-1">
+            <NavButton
+              active={currentPage === 'home'}
               onClick={() => onNavigate('home')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                currentPage === 'home'
-                  ? 'bg-accent-primary text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-dark-700'
-              }`}
             >
               Upload
-            </button>
-            
-            <button
-              onClick={() => onNavigate('dashboard')}
+            </NavButton>
+
+            <NavButton
+              active={currentPage === 'dashboard'}
+              onClick={() => hasAnalysis && onNavigate('dashboard')}
               disabled={!hasAnalysis}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                currentPage === 'dashboard'
-                  ? 'bg-accent-primary text-white'
-                  : hasAnalysis
-                  ? 'text-gray-400 hover:text-white hover:bg-dark-700'
-                  : 'text-gray-600 cursor-not-allowed'
-              }`}
             >
-              Dashboard
-            </button>
+              Analysis
+            </NavButton>
 
             {hasAnalysis && (
-              <button
-                onClick={onReset}
-                className="px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700 transition-colors"
-              >
-                New Analysis
-              </button>
+              <>
+                <span style={{ color: '#c8bfb5', margin: '0 0.25rem' }}>|</span>
+                <button
+                  onClick={onReset}
+                  style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '0.8rem',
+                    color: '#a09590',
+                    background: 'none',
+                    border: 'none',
+                    padding: '0.375rem 0.75rem',
+                    cursor: 'pointer',
+                    transition: 'color 0.2s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--ink-900)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#a09590')}
+                >
+                  New file ↻
+                </button>
+              </>
             )}
           </nav>
         </div>
       </div>
     </header>
+  );
+}
+
+function NavButton({
+  active,
+  onClick,
+  disabled,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '0.8rem',
+        fontWeight: active ? 600 : 400,
+        color: disabled ? '#c8bfb5' : active ? 'var(--ink-900)' : 'var(--ink-500)',
+        background: active ? 'rgba(26, 20, 16, 0.07)' : 'transparent',
+        border: '1px solid',
+        borderColor: active ? 'rgba(26, 20, 16, 0.15)' : 'transparent',
+        borderRadius: '3px',
+        padding: '0.375rem 0.875rem',
+        cursor: disabled ? 'default' : 'pointer',
+        transition: 'all 0.15s',
+        letterSpacing: '0.02em',
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
