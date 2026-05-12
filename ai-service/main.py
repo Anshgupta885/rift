@@ -87,7 +87,8 @@ async def analyze_transactions(request: AnalyzeRequest):
     
     Returns comprehensive analysis with suspicion scores.
     """
-    start_time = time.time()
+    # Use perf_counter for precise timing
+    start_time = time.perf_counter()
     
     if not request.transactions:
         raise HTTPException(status_code=400, detail="No transactions provided")
@@ -109,20 +110,24 @@ async def analyze_transactions(request: AnalyzeRequest):
         fan_out=detection_results["smurfing"]["fan_out"],
         shell_networks=detection_results["shell_networks"],
         high_velocity=detection_results["high_velocity"],
-        merchants=detection_results["merchants"]
+        merchants=detection_results["merchants"],
+        self_loops=detection_results.get("self_loops", []),
+        cycle_participants=detection_results.get("cycle_participants", [])
     )
     
     account_scores = scorer.calculate_all_scores()
     fraud_rings = scorer.build_fraud_rings(detection_results["cycles"])
     
-    # Update ring_id in account scores
+    # Update ring_id in account scores (assigns highest-risk ring)
     for ring in fraud_rings:
         for account in ring["member_accounts"]:
             if account in account_scores:
+                # Only assign if not already assigned (scorer assigned highest-risk)
                 if not account_scores[account]["ring_id"]:
                     account_scores[account]["ring_id"] = ring["ring_id"]
     
-    processing_time = round(time.time() - start_time, 1)
+    # Calculate processing time in seconds with precision
+    processing_time = round(time.perf_counter() - start_time, 4)
     
     return AnalyzeResponse(
         cycles=detection_results["cycles"],

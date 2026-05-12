@@ -2,14 +2,7 @@
  * Header Component — editorial/warm aesthetic
  */
 
-interface HeaderProps {
-  currentPage: 'home' | 'dashboard';
-  onNavigate: (page: 'home' | 'dashboard') => void;
-  hasAnalysis: boolean;
-  onReset: () => void;
-}
-
-function Header({ currentPage, onNavigate, hasAnalysis, onReset }: HeaderProps) {
+function Header({ currentPage, onNavigate, hasAnalysis, onReset, user, onLogout }) {
   return (
     <header style={{ background: 'rgba(253, 250, 245, 0.92)', backdropFilter: 'blur(12px)' }}
       className="border-b border-stone-200 sticky top-0 z-50">
@@ -89,6 +82,24 @@ function Header({ currentPage, onNavigate, hasAnalysis, onReset }: HeaderProps) 
                 </button>
               </>
             )}
+            {/* Auth buttons */}
+            <div style={{ width: '1px', height: '28px', background: 'transparent' }} />
+            {user ? (
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <span style={{ color: 'var(--ink-900)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem' }}>{user.name || user.email}</span>
+                <button
+                  onClick={() => { if (onLogout) onLogout(); }}
+                  className="btn-ghost"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button onClick={() => onNavigate('login')} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.8rem', color: 'var(--ink-900)', background: 'transparent', border: 'none', cursor: 'pointer' }}>Sign in</button>
+                <button onClick={() => onNavigate('signup')} className="btn-primary" style={{ padding: '0.35rem 0.65rem' }}>Sign up</button>
+              </div>
+            )}
           </nav>
         </div>
       </div>
@@ -101,11 +112,6 @@ function NavButton({
   onClick,
   disabled,
   children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  disabled?: boolean;
-  children: React.ReactNode;
 }) {
   return (
     <button

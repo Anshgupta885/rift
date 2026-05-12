@@ -3,24 +3,18 @@
  */
 
 import { useState } from 'react';
-import type { SuspiciousAccount, SortConfig, SortDirection } from '../types';
 
-interface Props {
-  accounts: SuspiciousAccount[];
-  onAccountSelect: (accountId: string) => void;
-}
-
-const SortChevron = ({ active, dir }: { active: boolean; dir: SortDirection }) => (
+const SortChevron = ({ active, dir }) => (
   <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ marginLeft: 4, opacity: active ? 1 : 0.3 }}>
     <path d={dir === 'asc' ? 'M2 7l3-4 3 4' : 'M2 3l3 4 3-4'} stroke={active ? 'var(--amber)' : '#a09590'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-function SuspiciousAccountsTable({ accounts, onAccountSelect }: Props) {
-  const [sort, setSort] = useState<SortConfig>({ key: 'suspicion_score', direction: 'desc' });
+function SuspiciousAccountsTable({ accounts, onAccountSelect }) {
+  const [sort, setSort] = useState({ key: 'suspicion_score', direction: 'desc' });
   const [filter, setFilter] = useState('');
 
-  const handleSort = (key: string) => {
+  const handleSort = (key) => {
     setSort(s => ({ key, direction: s.key === key && s.direction === 'asc' ? 'desc' : 'asc' }));
   };
 
@@ -30,15 +24,15 @@ function SuspiciousAccountsTable({ accounts, onAccountSelect }: Props) {
   );
 
   const sorted = [...filtered].sort((a, b) => {
-    const av = a[sort.key as keyof SuspiciousAccount];
-    const bv = b[sort.key as keyof SuspiciousAccount];
+    const av = a[sort.key];
+    const bv = b[sort.key];
     if (typeof av === 'number' && typeof bv === 'number') return sort.direction === 'asc' ? av - bv : bv - av;
     if (typeof av === 'string' && typeof bv === 'string') return sort.direction === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
     return 0;
   });
 
-  const getColor = (s: number) => s >= 70 ? '#c44a2a' : s >= 40 ? '#a06c08' : '#3a5a4a';
-  const getBarColor = (s: number) => s >= 70 ? '#c44a2a' : s >= 40 ? '#c8870a' : '#3a5a4a';
+  const getColor = (s) => s >= 70 ? '#c44a2a' : s >= 40 ? '#a06c08' : '#3a5a4a';
+  const getBarColor = (s) => s >= 70 ? '#c44a2a' : s >= 40 ? '#c8870a' : '#3a5a4a';
 
   return (
     <div>
@@ -75,7 +69,7 @@ function SuspiciousAccountsTable({ accounts, onAccountSelect }: Props) {
               ].map(col => (
                 <th
                   key={col.label}
-                  onClick={col.key ? () => handleSort(col.key!) : undefined}
+                  onClick={col.key ? () => handleSort(col.key) : undefined}
                   style={{ cursor: col.key ? 'pointer' : 'default', whiteSpace: 'nowrap' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center' }}>

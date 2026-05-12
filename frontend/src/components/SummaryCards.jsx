@@ -2,13 +2,7 @@
  * Summary Cards — editorial metric display
  */
 
-import type { AnalysisSummary } from '../types';
-
-interface SummaryCardsProps {
-  summary: AnalysisSummary;
-}
-
-function SummaryCards({ summary }: SummaryCardsProps) {
+function SummaryCards({ summary }) {
   const detectionRate = summary.total_accounts_analyzed > 0
     ? ((summary.suspicious_accounts_flagged / summary.total_accounts_analyzed) * 100).toFixed(1)
     : '0.0';

@@ -4,17 +4,8 @@
 
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import type { UploadStatus, AnalysisResponse } from '../types';
 import { uploadFile } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-
-interface HomePageProps {
-  uploadStatus: UploadStatus;
-  setUploadStatus: (status: UploadStatus) => void;
-  error: string | null;
-  setError: (error: string | null) => void;
-  onAnalysisComplete: (data: AnalysisResponse, sessionId: string) => void;
-}
 
 const PATTERNS = [
   {
@@ -34,9 +25,9 @@ const PATTERNS = [
   },
 ];
 
-function HomePage({ uploadStatus, setUploadStatus, error, setError, onAnalysisComplete }: HomePageProps) {
+function HomePage({ uploadStatus, setUploadStatus, error, setError, onAnalysisComplete, onNavigate }) {
   const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
+    async (acceptedFiles) => {
       const file = acceptedFiles[0];
       if (!file) { setError('Please select a CSV file'); return; }
       if (!file.name.endsWith('.csv')) { setError('Only CSV files are supported'); return; }
@@ -54,7 +45,7 @@ function HomePage({ uploadStatus, setUploadStatus, error, setError, onAnalysisCo
           setUploadStatus('error');
         }
       } catch (err) {
-        setError((err as Error).message || 'Upload failed');
+        setError(err.message || 'Upload failed');
         setUploadStatus('error');
       }
     },
@@ -104,6 +95,9 @@ function HomePage({ uploadStatus, setUploadStatus, error, setError, onAnalysisCo
           Upload a CSV of financial transactions and our engine maps the graph,
           surfaces suspicious accounts, and identifies fraud ring structures automatically.
         </p>
+        <div style={{ marginTop: '0.75rem' }}>
+          <button onClick={() => onNavigate && onNavigate('login')} className="btn-ghost">Sign in</button>
+        </div>
       </div>
 
       {/* Upload zone */}

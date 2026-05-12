@@ -2,13 +2,7 @@
  * Risk Heatmap — warm editorial style
  */
 
-import type { SuspiciousAccount } from '../types';
-
-interface RiskHeatmapProps {
-  accounts: SuspiciousAccount[];
-}
-
-function RiskHeatmap({ accounts }: RiskHeatmapProps) {
+function RiskHeatmap({ accounts }) {
   const high = accounts.filter(a => a.suspicion_score >= 70).length;
   const medium = accounts.filter(a => a.suspicion_score >= 40 && a.suspicion_score < 70).length;
   const low = accounts.filter(a => a.suspicion_score < 40).length;

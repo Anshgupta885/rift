@@ -4,27 +4,16 @@
 
 import { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
-import type { Core, ElementDefinition } from 'cytoscape';
-import type { GraphData, FraudRing } from '../types';
 
-interface GraphVisualizationProps {
-  graphData: GraphData;
-  onNodeSelect: (accountId: string) => void;
-  selectedRing: FraudRing | null;
-}
-
-function GraphVisualization({ graphData, onNodeSelect, selectedRing }: GraphVisualizationProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const cyRef = useRef<Core | null>(null);
-  const [tooltip, setTooltip] = useState<{
-    visible: boolean; x: number; y: number;
-    data: { id: string; score: number; patterns: string[]; ringId: string | null } | null;
-  }>({ visible: false, x: 0, y: 0, data: null });
+function GraphVisualization({ graphData, onNodeSelect, selectedRing }) {
+  const containerRef = useRef(null);
+  const cyRef = useRef(null);
+  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, data: null });
 
   useEffect(() => {
     if (!containerRef.current || !graphData) return;
 
-    const elements: ElementDefinition[] = [];
+    const elements = [];
 
     for (const node of graphData.nodes) {
       const size = node.suspicious ? 20 + (node.suspicion_score / 100) * 28 : 18;
@@ -130,8 +119,7 @@ function GraphVisualization({ graphData, onNodeSelect, selectedRing }: GraphVisu
     cyRef.current = cytoscape({
       container: containerRef.current,
       elements,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      style: style as any,
+      style: style,
       layout: {
         name: 'cose',
         animate: false,
@@ -193,7 +181,7 @@ function GraphVisualization({ graphData, onNodeSelect, selectedRing }: GraphVisu
   const handleZoomOut = () => cyRef.current?.zoom(cyRef.current.zoom() / 1.2);
   const handleFit = () => cyRef.current?.fit();
 
-  const ScoreColor = (score: number) => score >= 70 ? '#c44a2a' : score >= 40 ? '#a06c08' : '#3a5a4a';
+  const ScoreColor = (score) => score >= 70 ? '#c44a2a' : score >= 40 ? '#a06c08' : '#3a5a4a';
 
   return (
     <div style={{ position: 'relative', height: '100%' }}>
@@ -280,7 +268,7 @@ function GraphVisualization({ graphData, onNodeSelect, selectedRing }: GraphVisu
   );
 }
 
-function LegendItem({ color, label, shape }: { color: string; label: string; shape: 'circle' | 'line' }) {
+function LegendItem({ color, label, shape }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
       {shape === 'circle'

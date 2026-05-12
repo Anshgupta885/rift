@@ -2,14 +2,7 @@
  * Fraud Explanation Panel — warm editorial
  */
 
-import type { SuspiciousAccount, FraudRing } from '../types';
-
-interface FraudExplanationPanelProps {
-  account: SuspiciousAccount | null;
-  ring: FraudRing | null;
-}
-
-const PATTERN_EXPLANATIONS: Record<string, string> = {
+const PATTERN_EXPLANATIONS = {
   cycle_length_3: 'Involved in a 3-node circular transaction pattern, indicating potential round-tripping of funds.',
   cycle_length_4: 'Part of a 4-node cycle where money flows back to origin — a classic layered laundering structure.',
   cycle_length_5: 'Participates in a complex 5-node circular flow, suggesting sophisticated layering.',
@@ -19,13 +12,13 @@ const PATTERN_EXPLANATIONS: Record<string, string> = {
   high_velocity: '5+ transactions within 24 hours — rapid fund movement consistent with structuring.',
 };
 
-const getRisk = (score: number) => {
+const getRisk = (score) => {
   if (score >= 70) return { label: 'High risk', color: '#c44a2a', bg: 'rgba(196, 74, 42, 0.08)', border: 'rgba(196, 74, 42, 0.2)' };
   if (score >= 40) return { label: 'Medium risk', color: '#a06c08', bg: 'rgba(200, 135, 10, 0.08)', border: 'rgba(200, 135, 10, 0.2)' };
   return { label: 'Low risk', color: '#3a5a4a', bg: 'rgba(58, 90, 74, 0.08)', border: 'rgba(58, 90, 74, 0.2)' };
 };
 
-function FraudExplanationPanel({ account, ring }: FraudExplanationPanelProps) {
+function FraudExplanationPanel({ account, ring }) {
   if (!account) {
     return (
       <div className="card">
@@ -151,7 +144,6 @@ function FraudExplanationPanel({ account, ring }: FraudExplanationPanelProps) {
         borderRadius: '3px',
         padding: '0.875rem',
         border: '1px solid rgba(196, 74, 42, 0.12)',
-        marginTop: '1rem',
       }}>
         <p style={{ fontFamily: "'Lora', serif", fontSize: '0.8rem', color: '#7a3020', lineHeight: 1.6, fontStyle: 'italic' }}>
           "{account.account_id} flagged for{' '}

@@ -2,8 +2,7 @@
  * API Service for communicating with the backend.
  */
 
-import axios, { AxiosError } from 'axios';
-import type { ApiResponse, AnalysisResponse, FraudAnalysis } from '../types';
+import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -15,12 +14,12 @@ const api = axios.create({
 /**
  * Upload CSV file for analysis
  */
-export async function uploadFile(file: File): Promise<ApiResponse<AnalysisResponse>> {
+export async function uploadFile(file) {
   const formData = new FormData();
   formData.append('file', file);
 
   try {
-    const response = await api.post<ApiResponse<AnalysisResponse>>('/upload', formData, {
+    const response = await api.post('/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -28,7 +27,7 @@ export async function uploadFile(file: File): Promise<ApiResponse<AnalysisRespon
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError<ApiResponse>;
+      const axiosError = error;
       throw new Error(axiosError.response?.data?.message || 'Failed to upload file');
     }
     throw error;
@@ -38,13 +37,13 @@ export async function uploadFile(file: File): Promise<ApiResponse<AnalysisRespon
 /**
  * Get analysis by session ID
  */
-export async function getAnalysis(sessionId: string): Promise<ApiResponse<AnalysisResponse>> {
+export async function getAnalysis(sessionId) {
   try {
-    const response = await api.get<ApiResponse<AnalysisResponse>>(`/analysis/${sessionId}`);
+    const response = await api.get(`/analysis/${sessionId}`);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError<ApiResponse>;
+      const axiosError = error;
       throw new Error(axiosError.response?.data?.message || 'Failed to retrieve analysis');
     }
     throw error;
@@ -54,7 +53,7 @@ export async function getAnalysis(sessionId: string): Promise<ApiResponse<Analys
 /**
  * Download analysis as JSON file
  */
-export async function downloadJSON(fraudAnalysis: FraudAnalysis): Promise<void> {
+export async function downloadJSON(fraudAnalysis) {
   const downloadData = {
     suspicious_accounts: fraudAnalysis.suspicious_accounts,
     fraud_rings: fraudAnalysis.fraud_rings,
@@ -76,11 +75,56 @@ export async function downloadJSON(fraudAnalysis: FraudAnalysis): Promise<void> 
 /**
  * Health check for backend
  */
-export async function checkHealth(): Promise<boolean> {
+export async function checkHealth() {
   try {
     const response = await api.get('/health', { timeout: 5000 });
     return response.status === 200;
   } catch {
     return false;
   }
+}
+
+/**
+ * Register a new user
+ */
+export async function registerUser({ name, email, password, role = 'user' }) {
+  try {
+    const response = await api.post('/user/register', { name, email, password, role });
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const axiosError = error;
+      throw new Error(axiosError.response?.data?.message || 'Registration failed');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Login existing user
+ */
+export async function loginUser({ email, password }) {
+  try {
+    const response = await api.post('/user/login', { email, password });
+    // store token locally for subsequent requests
+    if (response.data && response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+    }
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const axiosError = error;
+      throw new Error(axiosError.response?.data?.message || 'Login failed');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Logout user locally
+ */
+export function logoutUser() {
+  localStorage.removeItem('authToken');
+  delete api.defaults.headers.common['Authorization'];
 }

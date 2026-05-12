@@ -3,29 +3,23 @@
  */
 
 import { useState } from 'react';
-import type { FraudRing, SortConfig, SortDirection } from '../types';
 
-interface Props {
-  rings: FraudRing[];
-  onRingSelect: (ring: FraudRing) => void;
-}
-
-const SortChevron = ({ active, dir }: { active: boolean; dir: SortDirection }) => (
+const SortChevron = ({ active, dir }) => (
   <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ marginLeft: 4, opacity: active ? 1 : 0.3 }}>
     <path d={dir === 'asc' ? 'M2 7l3-4 3 4' : 'M2 3l3 4 3-4'} stroke={active ? 'var(--amber)' : '#a09590'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-function FraudRingTable({ rings, onRingSelect }: Props) {
-  const [sort, setSort] = useState<SortConfig>({ key: 'risk_score', direction: 'desc' });
+function FraudRingTable({ rings, onRingSelect }) {
+  const [sort, setSort] = useState({ key: 'risk_score', direction: 'desc' });
 
-  const handleSort = (key: string) => {
+  const handleSort = (key) => {
     setSort(s => ({ key, direction: s.key === key && s.direction === 'asc' ? 'desc' : 'asc' }));
   };
 
   const sorted = [...rings].sort((a, b) => {
-    const av = a[sort.key as keyof FraudRing];
-    const bv = b[sort.key as keyof FraudRing];
+    const av = a[sort.key];
+    const bv = b[sort.key];
     if (typeof av === 'number' && typeof bv === 'number') return sort.direction === 'asc' ? av - bv : bv - av;
     if (typeof av === 'string' && typeof bv === 'string') return sort.direction === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
     if (Array.isArray(av) && Array.isArray(bv)) return sort.direction === 'asc' ? av.length - bv.length : bv.length - av.length;
@@ -45,7 +39,7 @@ function FraudRingTable({ rings, onRingSelect }: Props) {
     );
   }
 
-  const getRiskColor = (s: number) => s >= 70 ? '#c44a2a' : s >= 40 ? '#a06c08' : '#3a5a4a';
+  const getRiskColor = (s) => s >= 70 ? '#c44a2a' : s >= 40 ? '#a06c08' : '#3a5a4a';
 
   return (
     <div style={{ overflowX: 'auto' }}>
@@ -62,7 +56,7 @@ function FraudRingTable({ rings, onRingSelect }: Props) {
             ].map(col => (
               <th
                 key={col.label}
-                onClick={col.key ? () => handleSort(col.key!) : undefined}
+                onClick={col.key ? () => handleSort(col.key) : undefined}
                 style={{ cursor: col.key ? 'pointer' : 'default', whiteSpace: 'nowrap' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center' }}>

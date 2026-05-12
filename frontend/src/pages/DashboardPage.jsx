@@ -3,7 +3,6 @@
  */
 
 import { useState } from 'react';
-import type { AnalysisResponse, SuspiciousAccount, FraudRing } from '../types';
 import { downloadJSON } from '../services/api';
 import GraphVisualization from '../components/GraphVisualization';
 import FraudRingTable from '../components/FraudRingTable';
@@ -12,18 +11,10 @@ import SummaryCards from '../components/SummaryCards';
 import FraudExplanationPanel from '../components/FraudExplanationPanel';
 import RiskHeatmap from '../components/RiskHeatmap';
 
-interface DashboardPageProps {
-  analysisData: AnalysisResponse | null;
-  sessionId: string | null;
-  onReset: () => void;
-}
-
-type TabType = 'graph' | 'accounts' | 'rings';
-
-function DashboardPage({ analysisData, onReset }: DashboardPageProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('graph');
-  const [selectedAccount, setSelectedAccount] = useState<SuspiciousAccount | null>(null);
-  const [selectedRing, setSelectedRing] = useState<FraudRing | null>(null);
+function DashboardPage({ analysisData, onReset }) {
+  const [activeTab, setActiveTab] = useState('graph');
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [selectedRing, setSelectedRing] = useState(null);
 
   if (!analysisData) {
     return (
@@ -36,7 +27,7 @@ function DashboardPage({ analysisData, onReset }: DashboardPageProps) {
 
   const { graph_data, fraud_analysis } = analysisData;
 
-  const handleNodeSelect = (accountId: string) => {
+  const handleNodeSelect = (accountId) => {
     const account = fraud_analysis.suspicious_accounts.find(a => a.account_id === accountId);
     setSelectedAccount(account || null);
     if (account?.ring_id) {
@@ -166,7 +157,7 @@ function DashboardPage({ analysisData, onReset }: DashboardPageProps) {
   );
 }
 
-function TabItem({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function TabItem({ label, active, onClick }) {
   return (
     <button className={`tab-item${active ? ' active' : ''}`} onClick={onClick}>
       {label}

@@ -2,11 +2,7 @@
  * Loading Spinner — warm amber
  */
 
-interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
-}
-
-function LoadingSpinner({ size = 'md' }: LoadingSpinnerProps) {
+function LoadingSpinner({ size = 'md' }) {
   const sizes = { sm: 20, md: 32, lg: 48 };
   const s = sizes[size];
 
